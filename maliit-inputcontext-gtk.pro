@@ -6,19 +6,11 @@ include(./config.pri)
         Important build options: \
         \\n\\t PREFIX : Install prefix (default: /usr) \
         \\n\\t {BIN,LIB,INCLUDE,DOC}DIR : Install prefix for specific types of files \
-        \\n\\t MALIIT_DEFAULT_PLUGIN : Default onscreen (virtual) keyboard plugin \
-        \\n\\t MALIIT_DEFAULT_HW_PLUGIN : Default hardware keyboard plugin \
-        \\n\\t MALIIT_SERVER_ARGUMENTS : Arguments to use for starting maliit-server by D-Bus activation \
         \\nRecognised CONFIG flags: \
-        \\n\\t enable-contextkit : Build contextkit support (for monitoring hardware keyboard status) \
-        \\n\\t enable-dbus-activation : Enable dbus activation support for maliit-server \
-        \\n\\t disable-dbus : Disable dbus communication backend \
         \\n\\t notests : Do not build tests \
-        \\n\\t nogtk : Do not build GTK+ input method module, nor the glib-based application support libraries\
         \\n\\t nodoc : Do not build documentation\
         \\n\\t disable-gtk-cache-update : Do not update GTK2/3 input method caches (used for packaging) \
         \\n\\t local-install : Install everything underneath PREFIX, nothing to system directories reported by GTK+, Qt, DBus etc. \
-        \\n\\t wayland : Compile with support for wayland \
         \\nInfluential environment variables: \
         \\n\\t PKG_CONFIG_PATH : Override standard directories to look for pkg-config information \
         \\nExamples: \
@@ -36,38 +28,16 @@ include(./config.pri)
 CONFIG += ordered
 TEMPLATE = subdirs
 
-SUBDIRS = common
+SUBDIRS = dbus_interfaces connection-glib maliit-glib
 
-!disable-dbus {
-    SUBDIRS += dbus_interfaces
+!nodoc {
+    SUBDIRS += maliit-glib/maliit-glib-docs.pro
 }
 
-contains(QT_MAJOR_VERSION, 4) {
-    error("Qt 5 is required. For the Qt 4 input context see maliit-inputcontext-qt4. For a Qt 4 Maliit please use the 0.81 or 0.94-qt4 branches/release series instead")
-} else {
-    SUBDIRS += connection src
+SUBDIRS += gtk-input-context
 
-    !disable-dbus {
-        SUBDIRS += passthroughserver connection-glib maliit-glib
-        !nodoc {
-            SUBDIRS += maliit-glib/maliit-glib-docs.pro
-        }
-        SUBDIRS += gtk-input-context
-    }
-
-    nogtk {
-        SUBDIRS -= connection-glib maliit-glib gtk-input-context
-    }
-
-    SUBDIRS += maliit-plugins-quick examples
-
-    !nodoc {
-        SUBDIRS += doc
-    }
-
-    !notests {
-        SUBDIRS += tests
-    }
+!notests {
+    SUBDIRS += tests
 }
 
 QMAKE_EXTRA_TARGETS += check-xml
