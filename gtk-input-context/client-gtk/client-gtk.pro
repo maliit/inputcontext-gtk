@@ -20,11 +20,13 @@ DEFINES += G_LOG_DOMAIN=\\\"Maliit\\\"
 HEADERS += \
     ../client-gtk/client-imcontext-gtk.h \
     ../client-gtk/qt-gtk-translate.h \
+    ../client-gtk/qt-keysym-map.h \
 
 SOURCES += \
     ../client-gtk/gtk-imcontext-plugin.c \
     ../client-gtk/client-imcontext-gtk.c \
     ../client-gtk/qt-gtk-translate.cpp \
+    ../client-gtk/qt-keysym-map.cpp \
 
 GTK2_IM_LIBDIR = $$system(pkg-config --variable=libdir gtk+-2.0)
 GTK2_PREFIX = $$system(pkg-config --variable prefix gtk+-2.0)

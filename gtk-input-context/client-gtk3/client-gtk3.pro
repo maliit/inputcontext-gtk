@@ -20,11 +20,13 @@ DEFINES += G_LOG_DOMAIN=\\\"Maliit\\\"
 HEADERS += \
     ../client-gtk/client-imcontext-gtk.h \
     ../client-gtk/qt-gtk-translate.h \
+    ../client-gtk/qt-keysym-map.h \
 
 SOURCES += \
     ../client-gtk/gtk-imcontext-plugin.c \
     ../client-gtk/client-imcontext-gtk.c \
     ../client-gtk/qt-gtk-translate.cpp \
+    ../client-gtk/qt-keysym-map.cpp \
 
 GTK3_IM_LIBDIR = $$system(pkg-config --variable=libdir gtk+-3.0)
 GTK3_PREFIX = $$system(pkg-config --variable prefix gtk+-3.0)

@@ -32,7 +32,6 @@ HEADERS += \
     meego-im-proxy.h \
     meego-imcontext-dbus.h \
     meego-im-connector.h \
-    qt-keysym-map.h \
     debug.h \
     meego-imcontext-dbus-private.h \
     meego-im-connector-private.h \
@@ -41,7 +40,6 @@ SOURCES += \
     meego-im-proxy.c \
     meego-imcontext-dbus.c \
     meego-im-connector.c \
-    qt-keysym-map.cpp \
     debug.c \
 
 include($$TOP_DIR/dbus_interfaces/dbus_interfaces.pri)
