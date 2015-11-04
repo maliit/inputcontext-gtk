@@ -8,7 +8,6 @@ include(./config.pri)
         \\n\\t {BIN,LIB,INCLUDE,DOC}DIR : Install prefix for specific types of files \
         \\nRecognised CONFIG flags: \
         \\n\\t notests : Do not build tests \
-        \\n\\t nodoc : Do not build documentation\
         \\n\\t disable-gtk-cache-update : Do not update GTK2/3 input method caches (used for packaging) \
         \\n\\t local-install : Install everything underneath PREFIX, nothing to system directories reported by GTK+, Qt, DBus etc. \
         \\nInfluential environment variables: \
@@ -28,13 +27,7 @@ include(./config.pri)
 CONFIG += ordered
 TEMPLATE = subdirs
 
-SUBDIRS = dbus_interfaces connection-glib maliit-glib
-
-!nodoc {
-    SUBDIRS += maliit-glib/maliit-glib-docs.pro
-}
-
-SUBDIRS += gtk-input-context
+SUBDIRS = dbus_interfaces gtk-input-context
 
 !notests {
     SUBDIRS += tests
