@@ -27,7 +27,7 @@ include(./config.pri)
 CONFIG += ordered
 TEMPLATE = subdirs
 
-SUBDIRS = dbus_interfaces gtk-input-context
+SUBDIRS = gtk-input-context
 
 !notests {
     SUBDIRS += tests
