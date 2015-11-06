@@ -7,7 +7,6 @@ MALIIT_PLUGINS_HEADER = maliit/plugins
 MALIIT_PLUGINS_QUICK_HEADER = maliit/plugins-quick
 MALIIT_PLUGINS_QUICK_FACTORY = maliit-plugins-quick-factory
 MALIIT_SERVER_HEADER = maliit/server
-MALIIT_TEST_SUITE = maliit-framework-tests
 MALIIT_PACKAGENAME = maliit-inputcontext-gtk
 MALIIT_PACKAGE_BRIEF = Maliit Framework
 MALIIT_ATTRIBUTE_EXTENSIONS = $${MALIIT_PACKAGENAME}/extensions
