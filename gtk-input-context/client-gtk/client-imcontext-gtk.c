@@ -72,8 +72,6 @@ static gboolean meego_imcontext_notify_extended_attribute_changed (MaliitContext
 static gboolean meego_imcontext_update_input_method_area (MaliitContext *obj, GDBusMethodInvocation *invocation,
                                                           gint x, gint y, gint width, gint height, gpointer user_data);
 static void meego_imcontext_invoke_action(MaliitServer *obj, const char *action, const char* sequence, gpointer user_data);
-static void meego_imcontext_copy(MaliitContext *obj, gpointer user_data);
-static void meego_imcontext_paste(MaliitContext *obj, gpointer user_data);
 
 static GtkIMContext *meego_imcontext_get_slave_imcontext(void);
 
@@ -303,10 +301,6 @@ meego_imcontext_init(MeegoIMContext *self)
                      G_CALLBACK(meego_imcontext_notify_extended_attribute_changed), self);
     g_signal_connect(self->context, "handle-update-input-method-area",
                      G_CALLBACK(meego_imcontext_update_input_method_area), self);
-    g_signal_connect(self->context, "copy",
-                     G_CALLBACK(meego_imcontext_copy), self);
-    g_signal_connect(self->context, "paste",
-                     G_CALLBACK(meego_imcontext_paste), self);
     g_signal_connect(self->server, "invoke-action",
                      G_CALLBACK(meego_imcontext_invoke_action), self);
 }
@@ -821,39 +815,6 @@ meego_imcontext_key_event(MaliitContext *obj,
     return TRUE;
 }
 
-void
-meego_imcontext_copy(MaliitContext *obj G_GNUC_UNUSED,
-                     gpointer user_data)
-{
-    GdkWindow *window = NULL;
-    GdkEventKey *event = NULL;
-
-    STEP();
-
-    MeegoIMContext *imcontext = MEEGO_IMCONTEXT(user_data);
-    if (imcontext != focused_imcontext)
-        return;
-
-    if (focused_imcontext)
-        window = focused_imcontext->client_window;
-
-    event = compose_gdk_keyevent(GDK_KEY_PRESS, XK_C, GDK_CONTROL_MASK, window);
-    if (event) {
-        event->send_event = TRUE;
-        event->state |= IM_FORWARD_MASK;
-        gdk_event_put((GdkEvent *)event);
-        gdk_event_free((GdkEvent *)event);
-    }
-
-    event = compose_gdk_keyevent(GDK_KEY_RELEASE, XK_C, GDK_CONTROL_MASK, window);
-    if (event) {
-        event->send_event = TRUE;
-        event->state |= IM_FORWARD_MASK;
-        gdk_event_put((GdkEvent *)event);
-        gdk_event_free((GdkEvent *)event);
-    }
-}
-
 static unsigned int
 find_signal(const char *action, const char *alternative, GtkWidget *widget)
 {
@@ -899,39 +860,6 @@ meego_imcontext_invoke_action(MaliitServer *obj G_GNUC_UNUSED,
             g_signal_emit(widget, signal, 0);
             return;
         }
-    }
-}
-
-void
-meego_imcontext_paste(MaliitContext *obj G_GNUC_UNUSED,
-                      gpointer user_data)
-{
-    GdkWindow *window = NULL;
-    GdkEventKey *event = NULL;
-
-    STEP();
-
-    MeegoIMContext *imcontext = MEEGO_IMCONTEXT(user_data);
-    if (imcontext != focused_imcontext)
-        return;
-
-    if (focused_imcontext)
-        window = focused_imcontext->client_window;
-
-    event = compose_gdk_keyevent(GDK_KEY_PRESS, XK_V, GDK_CONTROL_MASK, window);
-    if (event) {
-        event->send_event = TRUE;
-        event->state |= IM_FORWARD_MASK;
-        gdk_event_put((GdkEvent *)event);
-        gdk_event_free((GdkEvent *)event);
-    }
-
-    event = compose_gdk_keyevent(GDK_KEY_RELEASE, XK_V, GDK_CONTROL_MASK, window);
-    if (event) {
-        event->send_event = TRUE;
-        event->state |= IM_FORWARD_MASK;
-        gdk_event_put((GdkEvent *)event);
-        gdk_event_free((GdkEvent *)event);
     }
 }
 
