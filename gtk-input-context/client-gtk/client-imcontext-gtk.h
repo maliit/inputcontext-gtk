@@ -58,7 +58,7 @@ struct _MeegoIMContext {
     gchar *preedit_str;
     PangoAttrList *preedit_attrs;
     gint preedit_cursor_pos;
-    GVariant *widget_state; /* Mapping between string and GValues with properties of the focused widget */
+    GVariant *widget_state; /* Mapping between string and GVariants with properties of the focused widget */
     gboolean focus_state; /* TRUE means a widget is focused, FALSE means no widget is focused */
 
     GdkRectangle keyboard_area;

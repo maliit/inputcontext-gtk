@@ -82,11 +82,6 @@ static const gchar *const WIDGET_INFO_ATTRIBUTE_EXTENSION_FILENAME = "toolbar";
 static const gchar *const WIDGET_INFO_SURROUNDING_TEXT = "surroundingText";
 static const gchar *const WIDGET_INFO_CURSOR_POSITION = "cursorPosition";
 
-void destroy_g_value(GValue *value)
-{
-    g_value_unset(value);
-    g_free(value);
-}
 
 GType meego_imcontext_get_type()
 {
