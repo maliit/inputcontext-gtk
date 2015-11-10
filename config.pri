@@ -13,9 +13,6 @@ MALIIT_LIB = maliit
 MALIIT_SETTINGS_LIB = maliit-settings
 MALIIT_HEADER = maliit
 MALIIT_FRAMEWORK_HEADER = maliit/framework
-# For libmaliit-glib
-MALIIT_CONNECTION_GLIB_LIB = maliit-connection-glib
-MALIIT_GLIB_LIB = maliit-glib
 
 include(defines.pri)
 
@@ -80,13 +77,6 @@ isEmpty(MALIIT_DEFAULT_HW_PLUGIN) {
 isEmpty(MALIIT_DEFAULT_PLUGIN) {
     MALIIT_DEFAULT_PLUGIN = libmaliit-keyboard-plugin.so
 }
-
-MALIIT_TEST_DATADIR = $$DATADIR/$$MALIIT_TEST_SUITE
-MALIIT_TEST_LIBDIR = $$LIBDIR/$$MALIIT_TEST_SUITE
-MALIIT_TEST_TMPDIR = /tmp/$$MALIIT_TEST_SUITE
-MALIIT_TEST_PLUGINS_DIR = $$MALIIT_TEST_LIBDIR/plugins
-
-DEFINES += MALIIT_TEST_PLUGINS_DIR=\\\"$$MALIIT_TEST_PLUGINS_DIR\\\"
 
 DEFINES += MALIIT_CONFIG_ROOT=\\\"$$MALIIT_CONFIG_ROOT\\\"
 
@@ -197,10 +187,6 @@ defineTest(outputFile) {
                 MALIIT_PLUGINS_QUICK_HEADER \
                 MALIIT_PLUGINS_QUICK_FACTORY \
                 MALIIT_SETTINGS_LIB \
-                MALIIT_TEST_SUITE \
-                MALIIT_TEST_DATADIR \
-                MALIIT_TEST_LIBDIR \
-                MALIIT_TEST_TMPDIR \
                 MALIIT_IN_DIR \
                 MALIIT_OUT_DIR \
                 MALIIT_PACKAGENAME \
@@ -211,7 +197,6 @@ defineTest(outputFile) {
                 MALIIT_CONNECTION_LIB \
                 MALIIT_SERVER_HEADER \
                 MALIIT_ABI_VERSION_MAJOR \
-                MALIIT_GLIB_LIB \
 
     command = "sed"
     for(var, variables) {

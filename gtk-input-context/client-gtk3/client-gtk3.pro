@@ -7,10 +7,7 @@ TARGET = im-maliit
 CONFIG += plugin
 
 CONFIG += link_pkgconfig
-PKGCONFIG += gtk+-3.0
-
-include($$TOP_DIR/maliit-glib/libmaliit-glib.pri)
-include($$TOP_DIR/connection-glib/libmaliit-connection-glib.pri)
+PKGCONFIG += gtk+-3.0 maliit-glib
 
 QMAKE_CXXFLAGS_DEBUG+=-Wno-error=deprecated-declarations
 QMAKE_CFLAGS_DEBUG+=-Wno-error=deprecated-declarations
@@ -20,11 +17,15 @@ DEFINES += G_LOG_DOMAIN=\\\"Maliit\\\"
 HEADERS += \
     ../client-gtk/client-imcontext-gtk.h \
     ../client-gtk/qt-gtk-translate.h \
+    ../client-gtk/qt-keysym-map.h \
+    ../client-gtk/debug.h \
 
 SOURCES += \
     ../client-gtk/gtk-imcontext-plugin.c \
     ../client-gtk/client-imcontext-gtk.c \
     ../client-gtk/qt-gtk-translate.cpp \
+    ../client-gtk/qt-keysym-map.cpp \
+    ../client-gtk/debug.c \
 
 GTK3_IM_LIBDIR = $$system(pkg-config --variable=libdir gtk+-3.0)
 GTK3_PREFIX = $$system(pkg-config --variable prefix gtk+-3.0)

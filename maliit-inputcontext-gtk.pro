@@ -7,15 +7,13 @@ include(./config.pri)
         \\n\\t PREFIX : Install prefix (default: /usr) \
         \\n\\t {BIN,LIB,INCLUDE,DOC}DIR : Install prefix for specific types of files \
         \\nRecognised CONFIG flags: \
-        \\n\\t notests : Do not build tests \
-        \\n\\t nodoc : Do not build documentation\
         \\n\\t disable-gtk-cache-update : Do not update GTK2/3 input method caches (used for packaging) \
         \\n\\t local-install : Install everything underneath PREFIX, nothing to system directories reported by GTK+, Qt, DBus etc. \
         \\nInfluential environment variables: \
         \\n\\t PKG_CONFIG_PATH : Override standard directories to look for pkg-config information \
         \\nExamples: \
         \\n\\t qmake \
-        \\n\\t qmake PREFIX=/usr LIBDIR=/usr/lib64 CONFIG+=notests \
+        \\n\\t qmake PREFIX=/usr LIBDIR=/usr/lib64 CONFIG+=disable-gtk-cache-update \
         \\n\\t qmake PREFIX=/usr MALIIT_DEFAULT_PLUGIN=libmykeyboard.so
 
     !build_pass:system(echo -e \"$$help_string\")
@@ -28,17 +26,7 @@ include(./config.pri)
 CONFIG += ordered
 TEMPLATE = subdirs
 
-SUBDIRS = dbus_interfaces connection-glib maliit-glib
-
-!nodoc {
-    SUBDIRS += maliit-glib/maliit-glib-docs.pro
-}
-
-SUBDIRS += gtk-input-context
-
-!notests {
-    SUBDIRS += tests
-}
+SUBDIRS = gtk-input-context
 
 QMAKE_EXTRA_TARGETS += check-xml
 check-xml.target = check-xml

@@ -22,11 +22,9 @@
 #define _CLIENT_IMCONTEXT_GTK_H
 
 #include <gtk/gtk.h>
+#include <maliit-glib/maliitserver.h>
+#include <maliit-glib/maliitcontext.h>
 #include <maliit-glib/maliitattributeextensionregistry.h>
-
-#include "meego-im-proxy.h"
-#include "meego-imcontext-dbus.h"
-#include "meego-im-connector.h"
 
 G_BEGIN_DECLS
 
@@ -50,8 +48,8 @@ typedef struct _MeegoIMContextClass MeegoIMContextClass;
 struct _MeegoIMContext {
     GtkIMContext parent;
 
-    MeegoIMProxy *proxy;
-    MeegoImConnector *connector;
+    MaliitServer *server;
+    MaliitContext *context;
     MaliitAttributeExtensionRegistry *registry;
 
     GdkWindow *client_window;
@@ -60,7 +58,7 @@ struct _MeegoIMContext {
     gchar *preedit_str;
     PangoAttrList *preedit_attrs;
     gint preedit_cursor_pos;
-    GHashTable *widget_state; /* Mapping between string and GValues with properties of the focused widget */
+    GVariant *widget_state; /* Mapping between string and GValues with properties of the focused widget */
     gboolean focus_state; /* TRUE means a widget is focused, FALSE means no widget is focused */
 
     GdkRectangle keyboard_area;

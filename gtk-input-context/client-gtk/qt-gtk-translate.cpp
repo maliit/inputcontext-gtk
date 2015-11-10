@@ -90,7 +90,7 @@ compose_gdk_keyevent(GdkEventType type, guint keyval, guint state, GdkWindow *wi
 
 
 GdkEventKey *
-qt_key_event_to_gdk(int type, int key, int modifiers, char *text, GdkWindow *window)
+qt_key_event_to_gdk(int type, int key, int modifiers, const char *text, GdkWindow *window)
 {
 	Q_UNUSED(text);
 	guint state = 0;
