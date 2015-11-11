@@ -23,6 +23,7 @@
 
 
 #include <X11/keysym.h>
+#include <gdk/gdk.h>
 #include <gdk/gdkx.h> // For retrieving XID
 #include <maliit-glib/maliitbus.h>
 
@@ -200,8 +201,10 @@ meego_imcontext_dispose(GObject *object)
 {
     MeegoIMContext *imcontext = MEEGO_IMCONTEXT(object);
 
-    g_signal_handlers_disconnect_by_data (imcontext->context, object);
-    g_signal_handlers_disconnect_by_data (imcontext->server, object);
+    if (imcontext->context)
+        g_signal_handlers_disconnect_by_data (imcontext->context, object);
+    if (imcontext->server)
+        g_signal_handlers_disconnect_by_data (imcontext->server, object);
 
     g_clear_object(&imcontext->context);
     g_clear_object(&imcontext->server);
@@ -248,11 +251,66 @@ meego_imcontext_class_init(MeegoIMContextClass *klass)
 }
 
 
-static void
-meego_imcontext_init(MeegoIMContext *self)
+static MaliitContext *
+get_context(MeegoIMContext *context)
 {
     GError *error = NULL;
 
+    if (!context->context && maliit_is_running()) {
+        context->context = maliit_get_context_sync(NULL, &error);
+
+        if (context->context) {
+            g_object_ref(context->context);
+            g_signal_connect(context->context, "handle-im-initiated-hide",
+                             G_CALLBACK(meego_imcontext_im_initiated_hide), context);
+            g_signal_connect(context->context, "handle-commit-string",
+                             G_CALLBACK(meego_imcontext_commit_string), context);
+            g_signal_connect(context->context, "handle-update-preedit",
+                             G_CALLBACK(meego_imcontext_update_preedit), context);
+            g_signal_connect(context->context, "handle-key-event",
+                             G_CALLBACK(meego_imcontext_key_event), context);
+            g_signal_connect(context->context, "handle-set-redirect-keys",
+                             G_CALLBACK(meego_imcontext_set_redirect_keys), context);
+            g_signal_connect(context->context, "handle-notify-extended-attribute-changed",
+                             G_CALLBACK(meego_imcontext_notify_extended_attribute_changed), context);
+            g_signal_connect(context->context, "handle-update-input-method-area",
+                             G_CALLBACK(meego_imcontext_update_input_method_area), context);
+        } else {
+            g_warning("Unable to connect to context: %s", error->message);
+            g_clear_error(&error);
+        }
+    }
+
+    return context->context;
+}
+
+
+static MaliitServer *
+get_server(MeegoIMContext *context)
+{
+    GError *error = NULL;
+
+    if (!context->server && maliit_is_running()) {
+        get_context(context);
+
+        context->server = maliit_get_server_sync(NULL, &error);
+
+        if (context->server) {
+            g_object_ref(context->server);
+            g_signal_connect(context->server, "invoke-action", G_CALLBACK(meego_imcontext_invoke_action), context);
+        } else {
+            g_warning("Unable to connect to server: %s", error->message);
+            g_clear_error(&error);
+        }
+    }
+
+    return context->server;
+}
+
+
+static void
+meego_imcontext_init(MeegoIMContext *self)
+{
     self->client_window = NULL;
 
     self->cursor_location.x = -1;
@@ -266,38 +324,11 @@ meego_imcontext_init(MeegoIMContext *self)
 
     self->focus_state = FALSE;
 
-    self->server = maliit_get_server_sync(NULL, &error);
+    if (maliit_is_running()) {
+        get_context(self);
 
-    if (!self->server) {
-        g_warning("Unable to connect to server: %s", error->message);
-        g_clear_error(&error);
+        self->registry = maliit_attribute_extension_registry_get_instance();
     }
-
-    self->context = maliit_get_context_sync(NULL, &error);
-
-    if (!self->context) {
-        g_warning("Unable to connect to context: %s", error->message);
-        g_clear_error(&error);
-    }
-
-    self->registry = maliit_attribute_extension_registry_get_instance();
-
-    g_signal_connect(self->context, "handle-im-initiated-hide",
-                     G_CALLBACK(meego_imcontext_im_initiated_hide), self);
-    g_signal_connect(self->context, "handle-commit-string",
-                     G_CALLBACK(meego_imcontext_commit_string), self);
-    g_signal_connect(self->context, "handle-update-preedit",
-                     G_CALLBACK(meego_imcontext_update_preedit), self);
-    g_signal_connect(self->context, "handle-key-event",
-                     G_CALLBACK(meego_imcontext_key_event), self);
-    g_signal_connect(self->context, "handle-set-redirect-keys",
-                     G_CALLBACK(meego_imcontext_set_redirect_keys), self);
-    g_signal_connect(self->context, "handle-notify-extended-attribute-changed",
-                     G_CALLBACK(meego_imcontext_notify_extended_attribute_changed), self);
-    g_signal_connect(self->context, "handle-update-input-method-area",
-                     G_CALLBACK(meego_imcontext_update_input_method_area), self);
-    g_signal_connect(self->server, "invoke-action",
-                     G_CALLBACK(meego_imcontext_invoke_action), self);
 }
 
 
@@ -308,6 +339,9 @@ meego_imcontext_focus_in(GtkIMContext *context)
     gboolean focus_changed = TRUE;
     GError *error = NULL;
 
+    if (!maliit_is_running())
+        return;
+
     DBG("imcontext = %p", imcontext);
 
     if (focused_imcontext && focused_imcontext != imcontext)
@@ -317,15 +351,15 @@ meego_imcontext_focus_in(GtkIMContext *context)
     imcontext->focus_state = TRUE;
     meego_imcontext_update_widget_info(imcontext);
 
-    if (maliit_server_call_activate_context_sync(imcontext->server,
+    if (maliit_server_call_activate_context_sync(get_server(imcontext),
                                                  NULL,
                                                  &error)) {
-        if (maliit_server_call_update_widget_information_sync(imcontext->server,
+        if (maliit_server_call_update_widget_information_sync(get_server(imcontext),
                                                               imcontext->widget_state,
                                                               focus_changed,
                                                               NULL,
                                                               &error)) {
-            if (!maliit_server_call_show_input_method_sync(imcontext->server,
+            if (!maliit_server_call_show_input_method_sync(get_server(imcontext),
                                                            NULL,
                                                            &error)) {
                 g_warning("Unable to show input method: %s", error->message);
@@ -350,6 +384,9 @@ meego_imcontext_focus_out(GtkIMContext *context)
     MeegoIMContext *imcontext = MEEGO_IMCONTEXT(context);
     GError *error = NULL;
 
+    if (!maliit_is_running())
+        return;
+
     DBG("imcontext = %p", imcontext);
 
     meego_imcontext_reset(context);
@@ -360,12 +397,12 @@ meego_imcontext_focus_out(GtkIMContext *context)
 
     meego_imcontext_update_widget_info(imcontext);
 
-    if (maliit_server_call_update_widget_information_sync(imcontext->server,
+    if (maliit_server_call_update_widget_information_sync(get_server(imcontext),
                                                           imcontext->widget_state,
                                                           TRUE,
                                                           NULL,
                                                           &error)) {
-        if (!maliit_server_call_hide_input_method_sync(imcontext->server,
+        if (!maliit_server_call_hide_input_method_sync(get_server(imcontext),
                                                        NULL,
                                                        &error)) {
             g_warning("Unable to hide input method: %s", error->message);
@@ -388,6 +425,30 @@ meego_imcontext_filter_key_event(GtkIMContext *context, GdkEventKey *event)
     gchar *text = "";
     GError *error = NULL;
 
+    if (!maliit_is_running()) {
+        gchar string[10];
+        gunichar c = gdk_keyval_to_unicode(event->keyval);
+
+#if GTK_MAJOR_VERSION == 2
+        GdkModifierType no_text_input_mask = GDK_MOD1_MASK | GDK_CONTROL_MASK;
+#elif GTK_MAJOR_VERSION == 3
+        GdkDisplay *display = gdk_window_get_display(event->window);
+        GdkKeymap *keymap = gdk_keymap_get_for_display(display);
+        GdkModifierIntent intent = GDK_MODIFIER_INTENT_NO_TEXT_INPUT;
+        GdkModifierType no_text_input_mask = gdk_keymap_get_modifier_mask(keymap, intent);
+#endif
+
+        if (c && !g_unichar_iscntrl(c) && event->type == GDK_KEY_PRESS && !(event->state & no_text_input_mask)) {
+            string[g_unichar_to_utf8(c, string)] = 0;
+
+            g_signal_emit_by_name(imcontext, "commit", string);
+
+            return TRUE;
+        }
+
+        return FALSE;
+    }
+
     focused_widget = gtk_get_event_widget((GdkEvent *)event);
 
     DBG("event type=0x%x, state=0x%x, keyval=0x%x, keycode=0x%x, group=%d",
@@ -404,7 +465,7 @@ meego_imcontext_filter_key_event(GtkIMContext *context, GdkEventKey *event)
     if (!gdk_key_event_to_qt(event, &qevent_type, &qt_keycode, &qt_modifier))
         return FALSE;
 
-    if (!maliit_server_call_process_key_event_sync(imcontext->server,
+    if (!maliit_server_call_process_key_event_sync(get_server(imcontext),
                                                    qevent_type,
                                                    qt_keycode,
                                                    qt_modifier,
@@ -430,6 +491,9 @@ meego_imcontext_reset(GtkIMContext *context)
     MeegoIMContext *imcontext = MEEGO_IMCONTEXT(context);
     GError *error = NULL;
 
+    if (!maliit_is_running())
+        return;
+
     DBG("imcontext = %p", imcontext);
 
     if (imcontext != focused_imcontext) {
@@ -446,7 +510,7 @@ meego_imcontext_reset(GtkIMContext *context)
         g_free(commit_string);
     }
 
-    if (!maliit_server_call_reset_sync(imcontext->server, NULL, &error)) {
+    if (!maliit_server_call_reset_sync(get_server(imcontext), NULL, &error)) {
         g_warning("Unable to reset: %s", error->message);
         g_clear_error(&error);
     }
@@ -457,6 +521,19 @@ static void
 meego_imcontext_get_preedit_string(GtkIMContext *context, gchar **str, PangoAttrList **attrs, gint *cursor_pos)
 {
     MeegoIMContext *imcontext = MEEGO_IMCONTEXT(context);
+
+    if (!maliit_is_running()) {
+        if (str)
+            *str = g_strdup("");
+
+        if (attrs)
+            *attrs = pango_attr_list_new();
+
+        if (cursor_pos)
+            *cursor_pos = 0;
+
+        return;
+    }
 
     DBG("imcontext = %p", imcontext);
 
@@ -486,6 +563,10 @@ meego_imcontext_set_preedit_enabled(GtkIMContext *context, gboolean enabled)
 {
     UNUSED(context);
     UNUSED(enabled);
+
+    if (!maliit_is_running())
+        return;
+
     // TODO: Seems QT/MEEGO don't need it, it will always showing preedit.
     return;
 }
@@ -495,6 +576,10 @@ static void
 meego_imcontext_set_client_window(GtkIMContext *context, GdkWindow *window)
 {
     MeegoIMContext *imcontext = MEEGO_IMCONTEXT(context);
+
+    if (!maliit_is_running())
+        return;
+
     STEP();
 
     if (imcontext->client_window)
@@ -515,6 +600,9 @@ meego_imcontext_set_cursor_location(GtkIMContext *context, GdkRectangle *area)
     MeegoIMContext *imcontext = MEEGO_IMCONTEXT(context);
     //DBG("imcontext = %p, x=%d, y=%d, w=%d, h=%d", imcontext,
     //  area->x, area->y, area->width, area->height);
+
+    if (!maliit_is_running())
+        return;
 
     imcontext->cursor_location = *area;
 
