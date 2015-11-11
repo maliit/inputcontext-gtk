@@ -22,10 +22,12 @@
  */
 
 
-#include <X11/keysym.h>
 #include <gdk/gdk.h>
-#include <gdk/gdkx.h> // For retrieving XID
 #include <maliit-glib/maliitbus.h>
+
+#ifdef HAVE_X11
+#include <gdk/gdkx.h> // For retrieving XID
+#endif /* HAVE_X11 */
 
 #include "client-imcontext-gtk.h"
 #include "qt-gtk-translate.h"
@@ -76,7 +78,9 @@ static void meego_imcontext_invoke_action(MaliitServer *obj, const char *action,
 
 static GtkIMContext *meego_imcontext_get_slave_imcontext(void);
 
+#ifdef HAVE_X11
 static const gchar *const WIDGET_INFO_WIN_ID = "winId";
+#endif /* HAVE_X11 */
 static const gchar *const WIDGET_INFO_FOCUS_STATE = "focusState";
 static const gchar *const WIDGET_INFO_ATTRIBUTE_EXTENSION_ID = "toolbarId";
 static const gchar *const WIDGET_INFO_ATTRIBUTE_EXTENSION_FILENAME = "toolbar";
@@ -436,7 +440,7 @@ meego_imcontext_filter_key_event(GtkIMContext *context, GdkEventKey *event)
         GdkKeymap *keymap = gdk_keymap_get_for_display(display);
         GdkModifierIntent intent = GDK_MODIFIER_INTENT_NO_TEXT_INPUT;
         GdkModifierType no_text_input_mask = gdk_keymap_get_modifier_mask(keymap, intent);
-#endif
+#endif /* GTK_MAJOR_VERSION */
 
         if (c && !g_unichar_iscntrl(c) && event->type == GDK_KEY_PRESS && !(event->state & no_text_input_mask)) {
             string[g_unichar_to_utf8(c, string)] = 0;
@@ -626,10 +630,19 @@ meego_imcontext_update_widget_info(MeegoIMContext *imcontext)
 
     if (imcontext->focus_state) {
         /* Window ID */
+#ifdef HAVE_X11
+#if GTK_MAJOR_VERSION == 2
         if (imcontext->client_window) {
             guint64 xid = GDK_WINDOW_XID(imcontext->client_window);
             g_variant_dict_insert(&dict, WIDGET_INFO_WIN_ID, "t", xid);
         }
+#elif GTK_MAJOR_VERSION == 3
+        if (GDK_IS_X11_WINDOW(imcontext->client_window)) {
+            guint64 xid = GDK_WINDOW_XID(imcontext->client_window);
+            g_variant_dict_insert(&dict, WIDGET_INFO_WIN_ID, "t", xid);
+        }
+#endif /* GTK_MAJOR_VERSION */
+#endif /* HAVE_X11 */
 
         /* Attribute extensions */
         if (imcontext->client_window) {

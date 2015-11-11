@@ -14,6 +14,10 @@ QMAKE_CFLAGS_DEBUG+=-Wno-error=deprecated-declarations
 
 DEFINES += G_LOG_DOMAIN=\\\"Maliit\\\"
 
+x11 {
+    DEFINES += HAVE_X11
+}
+
 HEADERS += \
     ../client-gtk/client-imcontext-gtk.h \
     ../client-gtk/qt-gtk-translate.h \
