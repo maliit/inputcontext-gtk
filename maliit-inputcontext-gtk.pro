@@ -7,6 +7,7 @@ include(./config.pri)
         \\n\\t PREFIX : Install prefix (default: /usr) \
         \\n\\t {BIN,LIB,INCLUDE,DOC}DIR : Install prefix for specific types of files \
         \\nRecognised CONFIG flags: \
+        \\n\\t x11 : Compile with X11 support \
         \\n\\t disable-gtk-cache-update : Do not update GTK2/3 input method caches (used for packaging) \
         \\n\\t local-install : Install everything underneath PREFIX, nothing to system directories reported by GTK+, Qt, DBus etc. \
         \\nInfluential environment variables: \
