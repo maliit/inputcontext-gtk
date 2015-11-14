@@ -1,3 +1,11 @@
+0.99.1
+======
+
+CHANGES
+* Move maliit-glib back to maliit-framework
+* Fail gracefully without running maliit server
+* Make X11 support conditionally
+
 0.99.0
 ======
 
