@@ -33,50 +33,50 @@
 #include "qt-gtk-translate.h"
 #include "debug.h"
 
-static GType _meego_imcontext_type = 0;
+static GType _maliit_im_context_type = 0;
 static GtkIMContextClass *parent_class = NULL;
 
-static MeegoIMContext *focused_imcontext = NULL;
+static MaliitIMContext *focused_im_context = NULL;
 static GtkWidget *focused_widget = NULL;
 
 gboolean redirect_keys = FALSE;
 
-static void meego_imcontext_finalize(GObject *object);
+static void maliit_im_context_finalize(GObject *object);
 
-static void meego_imcontext_class_init(MeegoIMContextClass *klass);
-static void meego_imcontext_init(MeegoIMContext *meego_imcontext);
+static void maliit_im_context_class_init(MaliitIMContextClass *klass);
+static void maliit_im_context_init(MaliitIMContext *maliit_im_context);
 
-static void meego_imcontext_focus_in(GtkIMContext *context);
-static void meego_imcontext_focus_out(GtkIMContext *context);
-static gboolean meego_imcontext_filter_key_event(GtkIMContext *context, GdkEventKey *event);
-static void meego_imcontext_reset(GtkIMContext *context);
-static void meego_imcontext_get_preedit_string(GtkIMContext *context, gchar **str, PangoAttrList **attrs, gint *cursor_pos);
-static void meego_imcontext_set_preedit_enabled(GtkIMContext *context, gboolean enabled);
-static void meego_imcontext_set_client_window(GtkIMContext *context, GdkWindow *window);
-static void meego_imcontext_set_cursor_location(GtkIMContext *context, GdkRectangle *area);
-static void meego_imcontext_update_widget_info(MeegoIMContext *imcontext);
+static void maliit_im_context_focus_in(GtkIMContext *context);
+static void maliit_im_context_focus_out(GtkIMContext *context);
+static gboolean maliit_im_context_filter_key_event(GtkIMContext *context, GdkEventKey *event);
+static void maliit_im_context_reset(GtkIMContext *context);
+static void maliit_im_context_get_preedit_string(GtkIMContext *context, gchar **str, PangoAttrList **attrs, gint *cursor_pos);
+static void maliit_im_context_set_preedit_enabled(GtkIMContext *context, gboolean enabled);
+static void maliit_im_context_set_client_window(GtkIMContext *context, GdkWindow *window);
+static void maliit_im_context_set_cursor_location(GtkIMContext *context, GdkRectangle *area);
+static void maliit_im_context_update_widget_info(MaliitIMContext *im_context);
 
-static gboolean meego_imcontext_im_initiated_hide(MaliitContext *obj, GDBusMethodInvocation *invocation, gpointer user_data);
-static gboolean meego_imcontext_commit_string(MaliitContext *obj, GDBusMethodInvocation *invocation, const gchar *string,
+static gboolean maliit_im_context_im_initiated_hide(MaliitContext *obj, GDBusMethodInvocation *invocation, gpointer user_data);
+static gboolean maliit_im_context_commit_string(MaliitContext *obj, GDBusMethodInvocation *invocation, const gchar *string,
                                               gint replacement_start, gint replacement_length, gint cursor_pos,
                                               gpointer user_data);
-static gboolean meego_imcontext_update_preedit(MaliitContext *obj, GDBusMethodInvocation *invocation, const gchar *string,
+static gboolean maliit_im_context_update_preedit(MaliitContext *obj, GDBusMethodInvocation *invocation, const gchar *string,
                                                GVariant *formatListData, gint replaceStart, gint replaceLength, gint cursorPos,
                                                gpointer user_data);
-static gboolean meego_imcontext_key_event(MaliitContext *obj, GDBusMethodInvocation *invocation, gint type, gint key,
+static gboolean maliit_im_context_key_event(MaliitContext *obj, GDBusMethodInvocation *invocation, gint type, gint key,
                                           gint modifiers, const gchar *text, gboolean auto_repeat, gint count,
                                           guchar request_type, gpointer user_data);
-static gboolean meego_imcontext_set_redirect_keys(MaliitContext *obj, GDBusMethodInvocation *invocation, gboolean enabled,
+static gboolean maliit_im_context_set_redirect_keys(MaliitContext *obj, GDBusMethodInvocation *invocation, gboolean enabled,
                                                   gpointer user_data);
-static gboolean meego_imcontext_notify_extended_attribute_changed (MaliitContext *obj, GDBusMethodInvocation *invocation,
+static gboolean maliit_im_context_notify_extended_attribute_changed (MaliitContext *obj, GDBusMethodInvocation *invocation,
                                                                    gint id, const gchar *target, const gchar *target_item,
                                                                    const gchar *attribute, GVariant *variant_value,
                                                                    gpointer user_data);
-static gboolean meego_imcontext_update_input_method_area (MaliitContext *obj, GDBusMethodInvocation *invocation,
+static gboolean maliit_im_context_update_input_method_area (MaliitContext *obj, GDBusMethodInvocation *invocation,
                                                           gint x, gint y, gint width, gint height, gpointer user_data);
-static void meego_imcontext_invoke_action(MaliitServer *obj, const char *action, const char* sequence, gpointer user_data);
+static void maliit_im_context_invoke_action(MaliitServer *obj, const char *action, const char* sequence, gpointer user_data);
 
-static GtkIMContext *meego_imcontext_get_slave_imcontext(void);
+static GtkIMContext *maliit_im_context_get_slave_imcontext(void);
 
 #ifdef HAVE_X11
 static const gchar *const WIDGET_INFO_WIN_ID = "winId";
@@ -88,60 +88,60 @@ static const gchar *const WIDGET_INFO_SURROUNDING_TEXT = "surroundingText";
 static const gchar *const WIDGET_INFO_CURSOR_POSITION = "cursorPosition";
 
 
-GType meego_imcontext_get_type()
+GType maliit_im_context_get_type()
 {
-    return _meego_imcontext_type;
+    return _maliit_im_context_type;
 }
 
 
 void
-meego_imcontext_register_type(GTypeModule *type_module)
+maliit_im_context_register_type(GTypeModule *type_module)
 {
-    static const GTypeInfo meego_imcontext_info = {
-        sizeof(MeegoIMContextClass),
+    static const GTypeInfo maliit_im_context_info = {
+        sizeof(MaliitIMContextClass),
         (GBaseInitFunc) NULL,
         (GBaseFinalizeFunc) NULL,
-        (GClassInitFunc) meego_imcontext_class_init,
+        (GClassInitFunc) maliit_im_context_class_init,
         NULL,
         NULL,
-        sizeof(MeegoIMContext),
+        sizeof(MaliitIMContext),
         0,
-        (GInstanceInitFunc) meego_imcontext_init,
+        (GInstanceInitFunc) maliit_im_context_init,
         NULL
     };
 
-    if (_meego_imcontext_type)
+    if (_maliit_im_context_type)
         return;
 
     if (type_module) {
-        _meego_imcontext_type =
+        _maliit_im_context_type =
             g_type_module_register_type(
                 type_module,
                 GTK_TYPE_IM_CONTEXT,
-                "MeegoIMContext",
-                &meego_imcontext_info,
+                "MaliitIMContext",
+                &maliit_im_context_info,
                 (GTypeFlags)0);
     } else {
-        _meego_imcontext_type =
+        _maliit_im_context_type =
             g_type_register_static(
                 GTK_TYPE_IM_CONTEXT,
-                "MeegoIMContext",
-                &meego_imcontext_info,
+                "MaliitIMContext",
+                &maliit_im_context_info,
                 (GTypeFlags)0);
     }
 }
 
 
 
-// staff for fallback slave GTK simple imcontext
+// staff for fallback slave GTK simple im_context
 static void
 slave_commit(GtkIMContext *slave, const char *text, gpointer data)
 {
     UNUSED(slave);
     UNUSED(data);
     DBG("text = %s", text);
-    if (focused_imcontext && text) {
-        g_signal_emit_by_name(focused_imcontext, "commit", text);
+    if (focused_im_context && text) {
+        g_signal_emit_by_name(focused_im_context, "commit", text);
     }
 }
 
@@ -155,29 +155,29 @@ slave_preedit_changed(GtkIMContext *slave, gpointer data)
     PangoAttrList *attrs = NULL;
 
     STEP();
-    if (!focused_imcontext || !slave)
+    if (!focused_im_context || !slave)
         return;
 
     gtk_im_context_get_preedit_string(slave, &str, &attrs, &cursor_pos);
 
     if (str != NULL) {
-        g_free(focused_imcontext->preedit_str);
-        focused_imcontext->preedit_str = str;
+        g_free(focused_im_context->preedit_str);
+        focused_im_context->preedit_str = str;
     }
 
-    focused_imcontext->preedit_cursor_pos = cursor_pos;
+    focused_im_context->preedit_cursor_pos = cursor_pos;
 
-    if (focused_imcontext->preedit_attrs != NULL)
-        pango_attr_list_unref(focused_imcontext->preedit_attrs);
+    if (focused_im_context->preedit_attrs != NULL)
+        pango_attr_list_unref(focused_im_context->preedit_attrs);
 
-    focused_imcontext->preedit_attrs = attrs;
+    focused_im_context->preedit_attrs = attrs;
 
-    g_signal_emit_by_name(focused_imcontext, "preedit-changed");
+    g_signal_emit_by_name(focused_im_context, "preedit-changed");
 }
 
 
 static GtkIMContext *
-meego_imcontext_get_slave_imcontext(void)
+maliit_im_context_get_slave_imcontext(void)
 {
     static GtkIMContext *slave_ic = NULL;
 
@@ -194,69 +194,69 @@ meego_imcontext_get_slave_imcontext(void)
 
 
 GtkIMContext *
-meego_imcontext_new(void)
+maliit_im_context_new(void)
 {
-    MeegoIMContext *ic = MEEGO_IMCONTEXT(g_object_new(MEEGO_TYPE_IMCONTEXT, NULL));
+    MaliitIMContext *ic = MALIIT_IM_CONTEXT(g_object_new(MALIIT_TYPE_IM_CONTEXT, NULL));
     return GTK_IM_CONTEXT(ic);
 }
 
 static void
-meego_imcontext_dispose(GObject *object)
+maliit_im_context_dispose(GObject *object)
 {
-    MeegoIMContext *imcontext = MEEGO_IMCONTEXT(object);
+    MaliitIMContext *im_context = MALIIT_IM_CONTEXT(object);
 
-    if (imcontext->context)
-        g_signal_handlers_disconnect_by_data (imcontext->context, object);
-    if (imcontext->server)
-        g_signal_handlers_disconnect_by_data (imcontext->server, object);
+    if (im_context->context)
+        g_signal_handlers_disconnect_by_data (im_context->context, object);
+    if (im_context->server)
+        g_signal_handlers_disconnect_by_data (im_context->server, object);
 
-    g_clear_object(&imcontext->context);
-    g_clear_object(&imcontext->server);
+    g_clear_object(&im_context->context);
+    g_clear_object(&im_context->server);
 
     G_OBJECT_CLASS(parent_class)->dispose(object);
 }
 
 static void
-meego_imcontext_finalize(GObject *object)
+maliit_im_context_finalize(GObject *object)
 {
-    MeegoIMContext *imcontext = MEEGO_IMCONTEXT(object);
+    MaliitIMContext *im_context = MALIIT_IM_CONTEXT(object);
 
-    if (imcontext->widget_state)
-        g_variant_unref(imcontext->widget_state);
+    if (im_context->widget_state)
+        g_variant_unref(im_context->widget_state);
 
-    if (imcontext->client_window)
-        g_object_unref(imcontext->client_window);
+    if (im_context->client_window)
+        g_object_unref(im_context->client_window);
 
-    if (imcontext->registry)
-        g_object_unref(imcontext->registry);
+    if (im_context->registry)
+        g_object_unref(im_context->registry);
 
     G_OBJECT_CLASS(parent_class)->finalize(object);
 }
 
 
 static void
-meego_imcontext_class_init(MeegoIMContextClass *klass)
+maliit_im_context_class_init(MaliitIMContextClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     parent_class = (GtkIMContextClass *)g_type_class_peek_parent(klass);
     GtkIMContextClass *imclass = GTK_IM_CONTEXT_CLASS(klass);
 
-    gobject_class->dispose = meego_imcontext_dispose;
-    gobject_class->finalize = meego_imcontext_finalize;
+    gobject_class->dispose = maliit_im_context_dispose;
+    gobject_class->finalize = maliit_im_context_finalize;
 
-    imclass->focus_in = meego_imcontext_focus_in;
-    imclass->focus_out = meego_imcontext_focus_out;
-    imclass->filter_keypress = meego_imcontext_filter_key_event;
-    imclass->reset = meego_imcontext_reset;
-    imclass->set_client_window = meego_imcontext_set_client_window;
-    imclass->get_preedit_string = meego_imcontext_get_preedit_string;
-    imclass->set_cursor_location = meego_imcontext_set_cursor_location;
-    imclass->set_use_preedit = meego_imcontext_set_preedit_enabled;
+    imclass->focus_in = maliit_im_context_focus_in;
+    imclass->focus_out = maliit_im_context_focus_out;
+    imclass->filter_keypress = maliit_im_context_filter_key_event;
+    imclass->reset = maliit_im_context_reset;
+    imclass->set_client_window = maliit_im_context_set_client_window;
+    imclass->get_preedit_string = maliit_im_context_get_preedit_string;
+    imclass->set_cursor_location = maliit_im_context_set_cursor_location;
+    imclass->set_use_preedit = maliit_im_context_set_preedit_enabled;
 }
 
 
 static MaliitContext *
-get_context(MeegoIMContext *context)
+get_context(MaliitIMContext *context)
 {
     GError *error = NULL;
 
@@ -266,19 +266,19 @@ get_context(MeegoIMContext *context)
         if (context->context) {
             g_object_ref(context->context);
             g_signal_connect(context->context, "handle-im-initiated-hide",
-                             G_CALLBACK(meego_imcontext_im_initiated_hide), context);
+                             G_CALLBACK(maliit_im_context_im_initiated_hide), context);
             g_signal_connect(context->context, "handle-commit-string",
-                             G_CALLBACK(meego_imcontext_commit_string), context);
+                             G_CALLBACK(maliit_im_context_commit_string), context);
             g_signal_connect(context->context, "handle-update-preedit",
-                             G_CALLBACK(meego_imcontext_update_preedit), context);
+                             G_CALLBACK(maliit_im_context_update_preedit), context);
             g_signal_connect(context->context, "handle-key-event",
-                             G_CALLBACK(meego_imcontext_key_event), context);
+                             G_CALLBACK(maliit_im_context_key_event), context);
             g_signal_connect(context->context, "handle-set-redirect-keys",
-                             G_CALLBACK(meego_imcontext_set_redirect_keys), context);
+                             G_CALLBACK(maliit_im_context_set_redirect_keys), context);
             g_signal_connect(context->context, "handle-notify-extended-attribute-changed",
-                             G_CALLBACK(meego_imcontext_notify_extended_attribute_changed), context);
+                             G_CALLBACK(maliit_im_context_notify_extended_attribute_changed), context);
             g_signal_connect(context->context, "handle-update-input-method-area",
-                             G_CALLBACK(meego_imcontext_update_input_method_area), context);
+                             G_CALLBACK(maliit_im_context_update_input_method_area), context);
         } else {
             g_warning("Unable to connect to context: %s", error->message);
             g_clear_error(&error);
@@ -290,7 +290,7 @@ get_context(MeegoIMContext *context)
 
 
 static MaliitServer *
-get_server(MeegoIMContext *context)
+get_server(MaliitIMContext *context)
 {
     GError *error = NULL;
 
@@ -301,7 +301,7 @@ get_server(MeegoIMContext *context)
 
         if (context->server) {
             g_object_ref(context->server);
-            g_signal_connect(context->server, "invoke-action", G_CALLBACK(meego_imcontext_invoke_action), context);
+            g_signal_connect(context->server, "invoke-action", G_CALLBACK(maliit_im_context_invoke_action), context);
         } else {
             g_warning("Unable to connect to server: %s", error->message);
             g_clear_error(&error);
@@ -313,7 +313,7 @@ get_server(MeegoIMContext *context)
 
 
 static void
-meego_imcontext_init(MeegoIMContext *self)
+maliit_im_context_init(MaliitIMContext *self)
 {
     self->client_window = NULL;
 
@@ -337,33 +337,33 @@ meego_imcontext_init(MeegoIMContext *self)
 
 
 static void
-meego_imcontext_focus_in(GtkIMContext *context)
+maliit_im_context_focus_in(GtkIMContext *context)
 {
-    MeegoIMContext *imcontext = MEEGO_IMCONTEXT(context);
+    MaliitIMContext *im_context = MALIIT_IM_CONTEXT(context);
     gboolean focus_changed = TRUE;
     GError *error = NULL;
 
     if (!maliit_is_running())
         return;
 
-    DBG("imcontext = %p", imcontext);
+    DBG("im_context = %p", im_context);
 
-    if (focused_imcontext && focused_imcontext != imcontext)
-        meego_imcontext_focus_out(GTK_IM_CONTEXT(focused_imcontext));
-    focused_imcontext = imcontext;
+    if (focused_im_context && focused_im_context != im_context)
+        maliit_im_context_focus_out(GTK_IM_CONTEXT(focused_im_context));
+    focused_im_context = im_context;
 
-    imcontext->focus_state = TRUE;
-    meego_imcontext_update_widget_info(imcontext);
+    im_context->focus_state = TRUE;
+    maliit_im_context_update_widget_info(im_context);
 
-    if (maliit_server_call_activate_context_sync(get_server(imcontext),
+    if (maliit_server_call_activate_context_sync(get_server(im_context),
                                                  NULL,
                                                  &error)) {
-        if (maliit_server_call_update_widget_information_sync(get_server(imcontext),
-                                                              imcontext->widget_state,
+        if (maliit_server_call_update_widget_information_sync(get_server(im_context),
+                                                              im_context->widget_state,
                                                               focus_changed,
                                                               NULL,
                                                               &error)) {
-            if (!maliit_server_call_show_input_method_sync(get_server(imcontext),
+            if (!maliit_server_call_show_input_method_sync(get_server(im_context),
                                                            NULL,
                                                            &error)) {
                 g_warning("Unable to show input method: %s", error->message);
@@ -383,30 +383,30 @@ meego_imcontext_focus_in(GtkIMContext *context)
 
 
 static void
-meego_imcontext_focus_out(GtkIMContext *context)
+maliit_im_context_focus_out(GtkIMContext *context)
 {
-    MeegoIMContext *imcontext = MEEGO_IMCONTEXT(context);
+    MaliitIMContext *im_context = MALIIT_IM_CONTEXT(context);
     GError *error = NULL;
 
     if (!maliit_is_running())
         return;
 
-    DBG("imcontext = %p", imcontext);
+    DBG("im_context = %p", im_context);
 
-    meego_imcontext_reset(context);
+    maliit_im_context_reset(context);
 
-    imcontext->focus_state = FALSE;
-    focused_imcontext = NULL;
+    im_context->focus_state = FALSE;
+    focused_im_context = NULL;
     focused_widget = NULL;
 
-    meego_imcontext_update_widget_info(imcontext);
+    maliit_im_context_update_widget_info(im_context);
 
-    if (maliit_server_call_update_widget_information_sync(get_server(imcontext),
-                                                          imcontext->widget_state,
+    if (maliit_server_call_update_widget_information_sync(get_server(im_context),
+                                                          im_context->widget_state,
                                                           TRUE,
                                                           NULL,
                                                           &error)) {
-        if (!maliit_server_call_hide_input_method_sync(get_server(imcontext),
+        if (!maliit_server_call_hide_input_method_sync(get_server(im_context),
                                                        NULL,
                                                        &error)) {
             g_warning("Unable to hide input method: %s", error->message);
@@ -422,9 +422,9 @@ meego_imcontext_focus_out(GtkIMContext *context)
 
 
 static gboolean
-meego_imcontext_filter_key_event(GtkIMContext *context, GdkEventKey *event)
+maliit_im_context_filter_key_event(GtkIMContext *context, GdkEventKey *event)
 {
-    MeegoIMContext *imcontext = MEEGO_IMCONTEXT(context);
+    MaliitIMContext *im_context = MALIIT_IM_CONTEXT(context);
     int qevent_type = 0, qt_keycode = 0, qt_modifier = 0;
     gchar *text = "";
     GError *error = NULL;
@@ -445,7 +445,7 @@ meego_imcontext_filter_key_event(GtkIMContext *context, GdkEventKey *event)
         if (c && !g_unichar_iscntrl(c) && event->type == GDK_KEY_PRESS && !(event->state & no_text_input_mask)) {
             string[g_unichar_to_utf8(c, string)] = 0;
 
-            g_signal_emit_by_name(imcontext, "commit", string);
+            g_signal_emit_by_name(im_context, "commit", string);
 
             return TRUE;
         }
@@ -458,18 +458,18 @@ meego_imcontext_filter_key_event(GtkIMContext *context, GdkEventKey *event)
     DBG("event type=0x%x, state=0x%x, keyval=0x%x, keycode=0x%x, group=%d",
         event->type, event->state, event->keyval, event->hardware_keycode, event->group);
 
-    if (focused_imcontext != imcontext)
-        meego_imcontext_focus_in(context);
+    if (focused_im_context != im_context)
+        maliit_im_context_focus_in(context);
 
     if ((event->state & IM_FORWARD_MASK) || !redirect_keys) {
-        GtkIMContext *slave = meego_imcontext_get_slave_imcontext();
+        GtkIMContext *slave = maliit_im_context_get_slave_imcontext();
         return gtk_im_context_filter_keypress(slave, event);
     }
 
     if (!gdk_key_event_to_qt(event, &qevent_type, &qt_keycode, &qt_modifier))
         return FALSE;
 
-    if (!maliit_server_call_process_key_event_sync(get_server(imcontext),
+    if (!maliit_server_call_process_key_event_sync(get_server(im_context),
                                                    qevent_type,
                                                    qt_keycode,
                                                    qt_modifier,
@@ -490,31 +490,31 @@ meego_imcontext_filter_key_event(GtkIMContext *context, GdkEventKey *event)
 
 
 static void
-meego_imcontext_reset(GtkIMContext *context)
+maliit_im_context_reset(GtkIMContext *context)
 {
-    MeegoIMContext *imcontext = MEEGO_IMCONTEXT(context);
+    MaliitIMContext *im_context = MALIIT_IM_CONTEXT(context);
     GError *error = NULL;
 
     if (!maliit_is_running())
         return;
 
-    DBG("imcontext = %p", imcontext);
+    DBG("im_context = %p", im_context);
 
-    if (imcontext != focused_imcontext) {
+    if (im_context != focused_im_context) {
         return;
     }
 
     /* Commit preedit if it is not empty */
-    if (focused_imcontext && focused_imcontext->preedit_str && focused_imcontext->preedit_str[0]) {
-        char *commit_string = focused_imcontext->preedit_str;
-        focused_imcontext->preedit_str = g_strdup("");
-        focused_imcontext->preedit_cursor_pos = 0;
-        g_signal_emit_by_name(focused_imcontext, "preedit-changed");
-        g_signal_emit_by_name(focused_imcontext, "commit", commit_string);
+    if (focused_im_context && focused_im_context->preedit_str && focused_im_context->preedit_str[0]) {
+        char *commit_string = focused_im_context->preedit_str;
+        focused_im_context->preedit_str = g_strdup("");
+        focused_im_context->preedit_cursor_pos = 0;
+        g_signal_emit_by_name(focused_im_context, "preedit-changed");
+        g_signal_emit_by_name(focused_im_context, "commit", commit_string);
         g_free(commit_string);
     }
 
-    if (!maliit_server_call_reset_sync(get_server(imcontext), NULL, &error)) {
+    if (!maliit_server_call_reset_sync(get_server(im_context), NULL, &error)) {
         g_warning("Unable to reset: %s", error->message);
         g_clear_error(&error);
     }
@@ -522,9 +522,9 @@ meego_imcontext_reset(GtkIMContext *context)
 
 
 static void
-meego_imcontext_get_preedit_string(GtkIMContext *context, gchar **str, PangoAttrList **attrs, gint *cursor_pos)
+maliit_im_context_get_preedit_string(GtkIMContext *context, gchar **str, PangoAttrList **attrs, gint *cursor_pos)
 {
-    MeegoIMContext *imcontext = MEEGO_IMCONTEXT(context);
+    MaliitIMContext *im_context = MALIIT_IM_CONTEXT(context);
 
     if (!maliit_is_running()) {
         if (str)
@@ -539,31 +539,31 @@ meego_imcontext_get_preedit_string(GtkIMContext *context, gchar **str, PangoAttr
         return;
     }
 
-    DBG("imcontext = %p", imcontext);
+    DBG("im_context = %p", im_context);
 
     if (str) {
-        if (imcontext->preedit_str)
-            *str = g_strdup(imcontext->preedit_str);
+        if (im_context->preedit_str)
+            *str = g_strdup(im_context->preedit_str);
         else
             *str = g_strdup("");
     }
 
     if (attrs) {
-        if (imcontext->preedit_attrs) {
-            *attrs = imcontext->preedit_attrs;
-            pango_attr_list_ref(imcontext->preedit_attrs);
+        if (im_context->preedit_attrs) {
+            *attrs = im_context->preedit_attrs;
+            pango_attr_list_ref(im_context->preedit_attrs);
         } else {
             *attrs = pango_attr_list_new();
         }
     }
 
     if (cursor_pos)
-        *cursor_pos = imcontext->preedit_cursor_pos;
+        *cursor_pos = im_context->preedit_cursor_pos;
 }
 
 
 static void
-meego_imcontext_set_preedit_enabled(GtkIMContext *context, gboolean enabled)
+maliit_im_context_set_preedit_enabled(GtkIMContext *context, gboolean enabled)
 {
     UNUSED(context);
     UNUSED(enabled);
@@ -577,38 +577,38 @@ meego_imcontext_set_preedit_enabled(GtkIMContext *context, gboolean enabled)
 
 
 static void
-meego_imcontext_set_client_window(GtkIMContext *context, GdkWindow *window)
+maliit_im_context_set_client_window(GtkIMContext *context, GdkWindow *window)
 {
-    MeegoIMContext *imcontext = MEEGO_IMCONTEXT(context);
+    MaliitIMContext *im_context = MALIIT_IM_CONTEXT(context);
 
     if (!maliit_is_running())
         return;
 
     STEP();
 
-    if (imcontext->client_window)
-        g_object_unref(imcontext->client_window);
+    if (im_context->client_window)
+        g_object_unref(im_context->client_window);
 
     if (window)
         g_object_ref(window);
 
-    imcontext->client_window = window;
+    im_context->client_window = window;
 
     // TODO: might need to update cursor position or other staff later using this info?
 }
 
 
 static void
-meego_imcontext_set_cursor_location(GtkIMContext *context, GdkRectangle *area)
+maliit_im_context_set_cursor_location(GtkIMContext *context, GdkRectangle *area)
 {
-    MeegoIMContext *imcontext = MEEGO_IMCONTEXT(context);
-    //DBG("imcontext = %p, x=%d, y=%d, w=%d, h=%d", imcontext,
+    MaliitIMContext *im_context = MALIIT_IM_CONTEXT(context);
+    //DBG("im_context = %p, x=%d, y=%d, w=%d, h=%d", im_context,
     //  area->x, area->y, area->width, area->height);
 
     if (!maliit_is_running())
         return;
 
-    imcontext->cursor_location = *area;
+    im_context->cursor_location = *area;
 
     // TODO: call updateWidgetInformation?
     //The cursor location from GTK widget is simillar to ImMicroFocus info of a QWidget
@@ -618,7 +618,7 @@ meego_imcontext_set_cursor_location(GtkIMContext *context, GdkRectangle *area)
 
 /* Update the widget_state map with current information about the widget. */
 void
-meego_imcontext_update_widget_info(MeegoIMContext *imcontext)
+maliit_im_context_update_widget_info(MaliitIMContext *im_context)
 {
     GVariantDict dict;
 
@@ -626,31 +626,31 @@ meego_imcontext_update_widget_info(MeegoIMContext *imcontext)
     g_variant_dict_init(&dict, NULL);
 
     /* Focus state */
-    g_variant_dict_insert(&dict, WIDGET_INFO_FOCUS_STATE, "b", imcontext->focus_state);
+    g_variant_dict_insert(&dict, WIDGET_INFO_FOCUS_STATE, "b", im_context->focus_state);
 
-    if (imcontext->focus_state) {
+    if (im_context->focus_state) {
         /* Window ID */
 #ifdef HAVE_X11
 #if GTK_MAJOR_VERSION == 2
-        if (imcontext->client_window) {
-            guint64 xid = GDK_WINDOW_XID(imcontext->client_window);
+        if (im_context->client_window) {
+            guint64 xid = GDK_WINDOW_XID(im_context->client_window);
             g_variant_dict_insert(&dict, WIDGET_INFO_WIN_ID, "t", xid);
         }
 #elif GTK_MAJOR_VERSION == 3
-        if (GDK_IS_X11_WINDOW(imcontext->client_window)) {
-            guint64 xid = GDK_WINDOW_XID(imcontext->client_window);
+        if (GDK_IS_X11_WINDOW(im_context->client_window)) {
+            guint64 xid = GDK_WINDOW_XID(im_context->client_window);
             g_variant_dict_insert(&dict, WIDGET_INFO_WIN_ID, "t", xid);
         }
 #endif /* GTK_MAJOR_VERSION */
 #endif /* HAVE_X11 */
 
         /* Attribute extensions */
-        if (imcontext->client_window) {
+        if (im_context->client_window) {
             gpointer user_data = NULL;
             GtkWidget* widget = NULL;
             MaliitAttributeExtension *extension;
 
-            gdk_window_get_user_data (imcontext->client_window, &user_data);
+            gdk_window_get_user_data (im_context->client_window, &user_data);
 
             widget = GTK_WIDGET (user_data);
 
@@ -668,7 +668,7 @@ meego_imcontext_update_widget_info(MeegoIMContext *imcontext)
         }
 
         /* Surrounding text */
-        GtkIMContext *context = GTK_IM_CONTEXT(imcontext);
+        GtkIMContext *context = GTK_IM_CONTEXT(im_context);
         gchar *surrounding_text;
         gint cursor_index;
         if (gtk_im_context_get_surrounding(context, &surrounding_text, &cursor_index))
@@ -678,24 +678,24 @@ meego_imcontext_update_widget_info(MeegoIMContext *imcontext)
         }
     }
 
-    imcontext->widget_state = g_variant_ref_sink(g_variant_dict_end(&dict));
+    im_context->widget_state = g_variant_ref_sink(g_variant_dict_end(&dict));
 }
 
 // Call back functions for dbus obj
 gboolean
-meego_imcontext_im_initiated_hide(MaliitContext *obj,
+maliit_im_context_im_initiated_hide(MaliitContext *obj,
                                   GDBusMethodInvocation *invocation,
                                   gpointer user_data)
 {
-    MeegoIMContext *imcontext = MEEGO_IMCONTEXT(user_data);
-    if (imcontext != focused_imcontext)
+    MaliitIMContext *im_context = MALIIT_IM_CONTEXT(user_data);
+    if (im_context != focused_im_context)
         return FALSE;
 
-    if (focused_imcontext && focused_imcontext->client_window) {
+    if (focused_im_context && focused_im_context->client_window) {
         gpointer user_data = NULL;
         GtkWidget* parent_widget = NULL;
 
-        gdk_window_get_user_data (focused_imcontext->client_window, &user_data);
+        gdk_window_get_user_data (focused_im_context->client_window, &user_data);
 
         parent_widget = GTK_WIDGET (user_data);
 
@@ -713,7 +713,7 @@ meego_imcontext_im_initiated_hide(MaliitContext *obj,
 }
 
 gboolean
-meego_imcontext_commit_string(MaliitContext *obj,
+maliit_im_context_commit_string(MaliitContext *obj,
                               GDBusMethodInvocation *invocation,
                               const gchar *string,
                               int replacement_start G_GNUC_UNUSED,
@@ -723,16 +723,16 @@ meego_imcontext_commit_string(MaliitContext *obj,
 {
     DBG("string is:%s", string);
 
-    MeegoIMContext *imcontext = MEEGO_IMCONTEXT(user_data);
-    if (imcontext != focused_imcontext)
+    MaliitIMContext *im_context = MALIIT_IM_CONTEXT(user_data);
+    if (im_context != focused_im_context)
         return FALSE;
 
-    if (focused_imcontext) {
-        g_free(focused_imcontext->preedit_str);
-        focused_imcontext->preedit_str = g_strdup("");
-        focused_imcontext->preedit_cursor_pos = 0;
-        g_signal_emit_by_name(focused_imcontext, "preedit-changed");
-        g_signal_emit_by_name(focused_imcontext, "commit", string);
+    if (focused_im_context) {
+        g_free(focused_im_context->preedit_str);
+        focused_im_context->preedit_str = g_strdup("");
+        focused_im_context->preedit_cursor_pos = 0;
+        g_signal_emit_by_name(focused_im_context, "preedit-changed");
+        g_signal_emit_by_name(focused_im_context, "commit", string);
         maliit_context_complete_commit_string(obj, invocation);
         return TRUE;
     }
@@ -783,7 +783,7 @@ get_byte_range_from_unicode_offsets (const gchar *string,
 }
 
 gboolean
-meego_imcontext_update_preedit(MaliitContext *obj,
+maliit_im_context_update_preedit(MaliitContext *obj,
                                GDBusMethodInvocation *invocation,
                                const gchar *string,
                                GVariant *formatListData,
@@ -792,23 +792,23 @@ meego_imcontext_update_preedit(MaliitContext *obj,
                                gint cursorPos,
                                gpointer user_data)
 {
-    MeegoIMContext *imcontext = MEEGO_IMCONTEXT(user_data);
-    if (imcontext != focused_imcontext)
+    MaliitIMContext *im_context = MALIIT_IM_CONTEXT(user_data);
+    if (im_context != focused_im_context)
         return FALSE;
 
-    DBG("imcontext = %p string = %s cursorPos = %d", imcontext, string, cursorPos);
+    DBG("im_context = %p string = %s cursorPos = %d", im_context, string, cursorPos);
 
-    if (focused_imcontext) {
+    if (focused_im_context) {
         guint iter;
         PangoAttrList* attrs;
 
-        g_free(focused_imcontext->preedit_str);
-        focused_imcontext->preedit_str = g_strdup(string);
+        g_free(focused_im_context->preedit_str);
+        focused_im_context->preedit_str = g_strdup(string);
         /* If cursorPos is -1 explicitly set it to the end of the preedit */
         if (cursorPos == -1) {
             cursorPos = g_utf8_strlen(string, -1);
         }
-        focused_imcontext->preedit_cursor_pos = cursorPos;
+        focused_im_context->preedit_cursor_pos = cursorPos;
 
         /* attributes */
         attrs = pango_attr_list_new();
@@ -860,12 +860,12 @@ meego_imcontext_update_preedit(MaliitContext *obj,
             }
         }
 
-        if (focused_imcontext->preedit_attrs) {
-            pango_attr_list_unref (focused_imcontext->preedit_attrs);
+        if (focused_im_context->preedit_attrs) {
+            pango_attr_list_unref (focused_im_context->preedit_attrs);
         }
-        focused_imcontext->preedit_attrs = attrs;
+        focused_im_context->preedit_attrs = attrs;
 
-        g_signal_emit_by_name(focused_imcontext, "preedit-changed");
+        g_signal_emit_by_name(focused_im_context, "preedit-changed");
 
         maliit_context_complete_update_preedit(obj, invocation);
         return TRUE;
@@ -875,7 +875,7 @@ meego_imcontext_update_preedit(MaliitContext *obj,
 }
 
 gboolean
-meego_imcontext_key_event(MaliitContext *obj,
+maliit_im_context_key_event(MaliitContext *obj,
                           GDBusMethodInvocation *invocation,
                           gint type,
                           gint key,
@@ -890,12 +890,12 @@ meego_imcontext_key_event(MaliitContext *obj,
     GdkWindow *window = NULL;
 
     STEP();
-    MeegoIMContext *imcontext = MEEGO_IMCONTEXT(user_data);
-    if (imcontext != focused_imcontext)
+    MaliitIMContext *im_context = MALIIT_IM_CONTEXT(user_data);
+    if (im_context != focused_im_context)
         return FALSE;
 
-    if (focused_imcontext)
-        window = focused_imcontext->client_window;
+    if (focused_im_context)
+        window = focused_im_context->client_window;
 
     event = qt_key_event_to_gdk(type, key, modifiers, text, window);
     if (!event)
@@ -924,18 +924,18 @@ find_signal(const char *action, const char *alternative, GtkWidget *widget)
 }
 
 void
-meego_imcontext_invoke_action(MaliitServer *obj G_GNUC_UNUSED,
+maliit_im_context_invoke_action(MaliitServer *obj G_GNUC_UNUSED,
                               const char *action,
                               const char *sequence G_GNUC_UNUSED,
                               gpointer user_data)
 {
     GtkWidget* widget = NULL;
-    MeegoIMContext *imcontext = MEEGO_IMCONTEXT(user_data);
+    MaliitIMContext *im_context = MALIIT_IM_CONTEXT(user_data);
 
-    if (imcontext != focused_imcontext)
+    if (im_context != focused_im_context)
         return;
 
-    gdk_window_get_user_data (imcontext->client_window, &user_data);
+    gdk_window_get_user_data (im_context->client_window, &user_data);
     widget = GTK_WIDGET (user_data);
 
     if (widget) {
@@ -960,7 +960,7 @@ meego_imcontext_invoke_action(MaliitServer *obj G_GNUC_UNUSED,
 }
 
 gboolean
-meego_imcontext_set_redirect_keys(MaliitContext *obj,
+maliit_im_context_set_redirect_keys(MaliitContext *obj,
                                   GDBusMethodInvocation *invocation,
                                   gboolean enabled,
                                   gpointer user_data G_GNUC_UNUSED)
@@ -972,7 +972,7 @@ meego_imcontext_set_redirect_keys(MaliitContext *obj,
 }
 
 gboolean
-meego_imcontext_notify_extended_attribute_changed (MaliitContext *obj,
+maliit_im_context_notify_extended_attribute_changed (MaliitContext *obj,
                                                    GDBusMethodInvocation *invocation,
                                                    gint id,
                                                    const gchar *target,
@@ -981,23 +981,23 @@ meego_imcontext_notify_extended_attribute_changed (MaliitContext *obj,
                                                    GVariant *variant_value,
                                                    gpointer user_data)
 {
-    MeegoIMContext *imcontext = MEEGO_IMCONTEXT(user_data);
-    if (imcontext != focused_imcontext)
+    MaliitIMContext *im_context = MALIIT_IM_CONTEXT(user_data);
+    if (im_context != focused_im_context)
         return FALSE;
 
-    maliit_attribute_extension_registry_update_attribute (focused_imcontext->registry,
-                                                          id,
-                                                          target,
-                                                          target_item,
-                                                          attribute,
-                                                          variant_value);
+    maliit_attribute_extension_registry_update_attribute (focused_im_context->registry,
+							  id,
+							  target,
+							  target_item,
+							  attribute,
+							  variant_value);
 
     maliit_context_complete_notify_extended_attribute_changed(obj, invocation);
     return TRUE;
 }
 
 gboolean
-meego_imcontext_update_input_method_area (MaliitContext *obj,
+maliit_im_context_update_input_method_area (MaliitContext *obj,
                                           GDBusMethodInvocation *invocation,
                                           gint x,
                                           gint y,
@@ -1005,17 +1005,17 @@ meego_imcontext_update_input_method_area (MaliitContext *obj,
                                           gint height,
                                           gpointer user_data)
 {
-    MeegoIMContext *imcontext = MEEGO_IMCONTEXT(user_data);
+    MaliitIMContext *im_context = MALIIT_IM_CONTEXT(user_data);
     GdkRectangle cursor_rect, osk_rect = { x, y, width, height };
     guint clear_area_id;
 
-    if (!imcontext->client_window)
+    if (!im_context->client_window)
       return FALSE;
 
-    if (imcontext->keyboard_area.x == x &&
-        imcontext->keyboard_area.y == y &&
-        imcontext->keyboard_area.width == width &&
-        imcontext->keyboard_area.height == height)
+    if (im_context->keyboard_area.x == x &&
+        im_context->keyboard_area.y == y &&
+        im_context->keyboard_area.width == width &&
+        im_context->keyboard_area.height == height)
       return FALSE;
 
     clear_area_id = g_signal_lookup ("clear-area", GTK_TYPE_IM_CONTEXT);
@@ -1023,16 +1023,16 @@ meego_imcontext_update_input_method_area (MaliitContext *obj,
     if (clear_area_id == 0)
       return FALSE;
 
-    imcontext->keyboard_area = osk_rect;
+    im_context->keyboard_area = osk_rect;
 
-    gdk_window_get_root_coords (imcontext->client_window,
-                                imcontext->cursor_location.x,
-                                imcontext->cursor_location.y,
+    gdk_window_get_root_coords (im_context->client_window,
+                                im_context->cursor_location.x,
+                                im_context->cursor_location.y,
                                 &cursor_rect.x, &cursor_rect.y);
-    cursor_rect.width = imcontext->cursor_location.width;
-    cursor_rect.height = imcontext->cursor_location.height;
+    cursor_rect.width = im_context->cursor_location.width;
+    cursor_rect.height = im_context->cursor_location.height;
 
-    g_signal_emit (imcontext, clear_area_id, 0, &osk_rect, &cursor_rect);
+    g_signal_emit (im_context, clear_area_id, 0, &osk_rect, &cursor_rect);
 
     maliit_context_complete_update_input_method_area(obj, invocation);
     return TRUE;

@@ -34,18 +34,18 @@ typedef enum {
     IM_FORWARD_MASK = 1 << 20
 } IMModifierType;
 
-typedef struct _MeegoIMContext MeegoIMContext;
-typedef struct _MeegoIMContextClass MeegoIMContextClass;
+typedef struct _MaliitIMContext MaliitIMContext;
+typedef struct _MaliitIMContextClass MaliitIMContextClass;
 
-#define MEEGO_TYPE_IMCONTEXT        (meego_imcontext_get_type())
-#define MEEGO_IMCONTEXT(obj)        (G_TYPE_CHECK_INSTANCE_CAST((obj), MEEGO_TYPE_IMCONTEXT, MeegoIMContext))
-#define MEEGO_IMCONTEXT_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MEEGO_TYPE_IMCONTEXT, MeegoIMContextClass))
-#define MEEGO_IS_IMCONTEXT(obj)     (G_TYPE_CHECK_INSTANCE_TYPE((obj), MEEGO_TYPE_IMCONTEXT))
-#define MEEGO_IS_IMCONTEXT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MEEGO_TYPE_IMCONTEXT))
-#define MEEGO_IMCONTEXT_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MEEGO_TYPE_IMCONTEXT, MeegoIMContextClass))
+#define MALIIT_TYPE_IM_CONTEXT            (maliit_im_context_get_type())
+#define MALIIT_IM_CONTEXT(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MALIIT_TYPE_IM_CONTEXT, MaliitIMContext))
+#define MALIIT_IM_CONTEXT_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MALIIT_TYPE_IM_CONTEXT, MaliitIMContextClass))
+#define MALIIT_IS_IM_CONTEXT(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MALIIT_TYPE_IM_CONTEXT))
+#define MALIIT_IS_IM_CONTEXT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MALIIT_TYPE_IM_CONTEXT))
+#define MALIIT_IM_CONTEXT_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MALIIT_TYPE_IM_CONTEXT, MaliitIMContextClass))
 
 
-struct _MeegoIMContext {
+struct _MaliitIMContext {
     GtkIMContext parent;
 
     MaliitServer *server;
@@ -64,15 +64,14 @@ struct _MeegoIMContext {
     GdkRectangle keyboard_area;
 };
 
-struct _MeegoIMContextClass {
+struct _MaliitIMContextClass {
     GtkIMContextClass parent;
 };
 
-GType meego_imcontext_get_type(void);
+GType maliit_im_context_get_type(void);
 
-void meego_imcontext_register_type(GTypeModule *type_module);
-GtkIMContext *meego_imcontext_new(void);
-
+void maliit_im_context_register_type(GTypeModule *type_module);
+GtkIMContext *maliit_im_context_new(void);
 
 G_END_DECLS
 

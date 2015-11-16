@@ -30,7 +30,7 @@
 #include "client-imcontext-gtk.h"
 #include "debug.h"
 
-static const GtkIMContextInfo meego_im_info = {
+static const GtkIMContextInfo maliit_im_info = {
     "Maliit", /* ID */
     "Maliit Input Method",
     "maliit", /* Gettext domain */
@@ -40,7 +40,7 @@ static const GtkIMContextInfo meego_im_info = {
 
 
 static const GtkIMContextInfo *info_list[] = {
-    &meego_im_info
+    &maliit_im_info
 };
 
 
@@ -55,7 +55,7 @@ im_module_init(GTypeModule *type_module)
 {
     STEP();
     g_type_module_use(type_module);
-    meego_imcontext_register_type(type_module);
+    maliit_im_context_register_type(type_module);
     STEP();
 }
 
@@ -79,7 +79,7 @@ GtkIMContext *
 im_module_create(const gchar *context_id)
 {
     if (g_strcmp0(context_id, "Maliit") == 0) {
-        return meego_imcontext_new();
+        return maliit_im_context_new();
     } else {
         return NULL;
     }
