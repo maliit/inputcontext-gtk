@@ -277,7 +277,7 @@ XKeySymToQTKey(uint keySym)
                 return keySym;
 #else
 	if (keySym < 0x3000 )
-		return keySym | Qt::UNICODE_ACCEL;
+		return keySym;
 
 	for(i = 0; i < count; i++)
 		if(QtKeyXSymMaps[i].XKeySym == keySym)
