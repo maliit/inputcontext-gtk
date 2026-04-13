@@ -340,8 +340,6 @@ static void
 maliit_im_context_focus_in(GtkIMContext *context)
 {
     MaliitIMContext *im_context = MALIIT_IM_CONTEXT(context);
-    gboolean focus_changed = TRUE;
-    GError *error = NULL;
 
     if (!maliit_is_running())
         return;
@@ -355,28 +353,14 @@ maliit_im_context_focus_in(GtkIMContext *context)
     im_context->focus_state = TRUE;
     maliit_im_context_update_widget_info(im_context);
 
-    if (maliit_server_call_activate_context_sync(get_server(im_context),
+    maliit_server_call_activate_context(get_server(im_context), NULL, NULL, NULL);
+    maliit_server_call_update_widget_information(get_server(im_context),
+                                                 im_context->widget_state,
+                                                 TRUE,
                                                  NULL,
-                                                 &error)) {
-        if (maliit_server_call_update_widget_information_sync(get_server(im_context),
-                                                              im_context->widget_state,
-                                                              focus_changed,
-                                                              NULL,
-                                                              &error)) {
-            if (!maliit_server_call_show_input_method_sync(get_server(im_context),
-                                                           NULL,
-                                                           &error)) {
-                g_warning("Unable to show input method: %s", error->message);
-                g_clear_error(&error);
-            }
-        } else {
-            g_warning("Unable to update widget information: %s", error->message);
-            g_clear_error(&error);
-        }
-    } else {
-        g_warning("Unable to activate context: %s", error->message);
-        g_clear_error(&error);
-    }
+                                                 NULL,
+                                                 NULL);
+    maliit_server_call_show_input_method(get_server(im_context), NULL, NULL, NULL);
 
     // TODO: anything else than call "activateContext" and "showInputMethod" ?
 }
@@ -386,7 +370,6 @@ static void
 maliit_im_context_focus_out(GtkIMContext *context)
 {
     MaliitIMContext *im_context = MALIIT_IM_CONTEXT(context);
-    GError *error = NULL;
 
     if (!maliit_is_running())
         return;
@@ -401,21 +384,13 @@ maliit_im_context_focus_out(GtkIMContext *context)
 
     maliit_im_context_update_widget_info(im_context);
 
-    if (maliit_server_call_update_widget_information_sync(get_server(im_context),
-                                                          im_context->widget_state,
-                                                          TRUE,
-                                                          NULL,
-                                                          &error)) {
-        if (!maliit_server_call_hide_input_method_sync(get_server(im_context),
-                                                       NULL,
-                                                       &error)) {
-            g_warning("Unable to hide input method: %s", error->message);
-            g_clear_error(&error);
-        }
-    } else {
-        g_warning("Unable to update widget information: %s", error->message);
-        g_clear_error(&error);
-    }
+    maliit_server_call_update_widget_information(get_server(im_context),
+                                                 im_context->widget_state,
+                                                 TRUE,
+                                                 NULL,
+                                                 NULL,
+                                                 NULL);
+    maliit_server_call_hide_input_method(get_server(im_context), NULL, NULL, NULL);
 
     // TODO: anything else than call "hideInputMethod" ?
 }
@@ -427,7 +402,6 @@ maliit_im_context_filter_key_event(GtkIMContext *context, GdkEventKey *event)
     MaliitIMContext *im_context = MALIIT_IM_CONTEXT(context);
     int qevent_type = 0, qt_keycode = 0, qt_modifier = 0;
     gchar *text = "";
-    GError *error = NULL;
 
     if (!maliit_is_running()) {
         gchar string[10];
@@ -469,21 +443,19 @@ maliit_im_context_filter_key_event(GtkIMContext *context, GdkEventKey *event)
     if (!gdk_key_event_to_qt(event, &qevent_type, &qt_keycode, &qt_modifier))
         return FALSE;
 
-    if (!maliit_server_call_process_key_event_sync(get_server(im_context),
-                                                   qevent_type,
-                                                   qt_keycode,
-                                                   qt_modifier,
-                                                   text,
-                                                   0,
-                                                   1,
-                                                   event->hardware_keycode,
-                                                   event->state,
-                                                   event->time,
-                                                   NULL,
-                                                   &error)) {
-        g_warning("Unable to process key event: %s", error->message);
-        g_clear_error(&error);
-    }
+    maliit_server_call_process_key_event(get_server(im_context),
+                                         qevent_type,
+                                         qt_keycode,
+                                         qt_modifier,
+                                         text,
+                                         0,
+                                         1,
+                                         event->hardware_keycode,
+                                         event->state,
+                                         event->time,
+                                         NULL,
+                                         NULL,
+                                         NULL);
 
     return TRUE;
 }
@@ -493,7 +465,6 @@ static void
 maliit_im_context_reset(GtkIMContext *context)
 {
     MaliitIMContext *im_context = MALIIT_IM_CONTEXT(context);
-    GError *error = NULL;
 
     if (!maliit_is_running())
         return;
@@ -514,10 +485,7 @@ maliit_im_context_reset(GtkIMContext *context)
         g_free(commit_string);
     }
 
-    if (!maliit_server_call_reset_sync(get_server(im_context), NULL, &error)) {
-        g_warning("Unable to reset: %s", error->message);
-        g_clear_error(&error);
-    }
+    maliit_server_call_reset(get_server(im_context), NULL, NULL, NULL);
 }
 
 
