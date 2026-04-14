@@ -485,6 +485,15 @@ maliit_im_context_reset(GtkIMContext *context)
         g_free(commit_string);
     }
 
+    /* Update surrounding text state */
+    maliit_im_context_update_widget_info(im_context);
+    maliit_server_call_update_widget_information(get_server(im_context),
+                                                 im_context->widget_state,
+                                                 FALSE,
+                                                 NULL,
+                                                 NULL,
+                                                 NULL);
+
     maliit_server_call_reset(get_server(im_context), NULL, NULL, NULL);
 }
 
@@ -578,10 +587,20 @@ maliit_im_context_set_cursor_location(GtkIMContext *context, GdkRectangle *area)
 
     im_context->cursor_location = *area;
 
-    // TODO: call updateWidgetInformation?
     //The cursor location from GTK widget is simillar to ImMicroFocus info of a QWidget
     //Thus we might need to update Qt::ImMicroFocus info according to this.
     //But MEEGO IM seems not using this info at all
+
+    if (im_context->focus_state) {
+        /* Update surrounding text state */
+        maliit_im_context_update_widget_info(im_context);
+        maliit_server_call_update_widget_information(get_server(im_context),
+                                                     im_context->widget_state,
+                                                     FALSE,
+                                                     NULL,
+                                                     NULL,
+                                                     NULL);
+    }
 }
 
 /* Update the widget_state map with current information about the widget. */
@@ -702,6 +721,16 @@ maliit_im_context_commit_string(MaliitContext *obj,
         g_signal_emit_by_name(focused_im_context, "preedit-changed");
         g_signal_emit_by_name(focused_im_context, "commit", string);
         maliit_context_complete_commit_string(obj, invocation);
+
+        /* Update surrounding text state */
+        maliit_im_context_update_widget_info(focused_im_context);
+        maliit_server_call_update_widget_information(get_server(focused_im_context),
+                                                     focused_im_context->widget_state,
+                                                     FALSE,
+                                                     NULL,
+                                                     NULL,
+                                                     NULL);
+
         return TRUE;
     }
 
