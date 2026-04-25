@@ -86,6 +86,10 @@ static const gchar *const WIDGET_INFO_ATTRIBUTE_EXTENSION_ID = "toolbarId";
 static const gchar *const WIDGET_INFO_ATTRIBUTE_EXTENSION_FILENAME = "toolbar";
 static const gchar *const WIDGET_INFO_SURROUNDING_TEXT = "surroundingText";
 static const gchar *const WIDGET_INFO_CURSOR_POSITION = "cursorPosition";
+static const gchar *const WIDGET_INFO_CONTENT_TYPE = "contentType";
+static const gchar *const WIDGET_INFO_AUTOCAPITALIZATION_ENABLED = "autocapitalizationEnabled";
+static const gchar *const WIDGET_INFO_PREDICTION_ENABLED = "predictionEnabled";
+static const gchar *const WIDGET_INFO_HIDDEN_TEXT = "hiddenText";
 
 
 GType maliit_im_context_get_type()
@@ -603,6 +607,16 @@ maliit_im_context_set_cursor_location(GtkIMContext *context, GdkRectangle *area)
     }
 }
 
+typedef enum
+{
+    MaliitFreeTextContentType,
+    MaliitNumberContentType,
+    MaliitPhoneNumberContentType,
+    MaliitEmailContentType,
+    MaliitUrlContentType,
+    MaliitCustomContentType
+} MaliitTextContentType;
+
 /* Update the widget_state map with current information about the widget. */
 void
 maliit_im_context_update_widget_info(MaliitIMContext *im_context)
@@ -663,6 +677,46 @@ maliit_im_context_update_widget_info(MaliitIMContext *im_context)
             g_variant_dict_insert(&dict, WIDGET_INFO_SURROUNDING_TEXT, "s", surrounding_text);
             g_variant_dict_insert(&dict, WIDGET_INFO_CURSOR_POSITION, "i", cursor_index);
         }
+
+        /* Content type */
+        GtkInputHints hints;
+        GtkInputPurpose purpose;
+        MaliitTextContentType content_type;
+
+        g_object_get(context,
+                     "input-hints", &hints,
+                     "input-purpose", &purpose,
+                     NULL);
+
+        switch (purpose) {
+        case GTK_INPUT_PURPOSE_DIGITS:
+        case GTK_INPUT_PURPOSE_NUMBER:
+        case GTK_INPUT_PURPOSE_PIN:
+            content_type = MaliitNumberContentType;
+            break;
+        case GTK_INPUT_PURPOSE_PHONE:
+            content_type = MaliitPhoneNumberContentType;
+            break;
+        case GTK_INPUT_PURPOSE_URL:
+            content_type = MaliitUrlContentType;
+            break;
+        case GTK_INPUT_PURPOSE_EMAIL:
+            content_type = MaliitEmailContentType;
+            break;
+        default:
+            content_type = MaliitFreeTextContentType;
+            break;
+        }
+
+        g_variant_dict_insert(&dict, WIDGET_INFO_CONTENT_TYPE, "i", content_type);
+        g_variant_dict_insert(&dict, WIDGET_INFO_AUTOCAPITALIZATION_ENABLED, "b",
+                              !!(hints & GTK_INPUT_HINT_UPPERCASE_SENTENCES));
+        g_variant_dict_insert(&dict, WIDGET_INFO_PREDICTION_ENABLED, "b",
+                              !!(hints & (GTK_INPUT_HINT_WORD_COMPLETION |
+                                          GTK_INPUT_HINT_SPELLCHECK)));
+        g_variant_dict_insert(&dict, WIDGET_INFO_HIDDEN_TEXT, "b",
+                              purpose == GTK_INPUT_PURPOSE_PIN ||
+                              purpose == GTK_INPUT_PURPOSE_PASSWORD);
     }
 
     im_context->widget_state = g_variant_ref_sink(g_variant_dict_end(&dict));
